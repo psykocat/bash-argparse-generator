@@ -1,0 +1,6 @@
+*~
+.*.swp
+*.py[oa]
+__pycache__/
+*.bak
+*.sh

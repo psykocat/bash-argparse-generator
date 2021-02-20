@@ -1,0 +1,7 @@
+### CSV of shell options
+#comma-separated mix of short and/or long options;target_variable;yes/no (needs an argument);help string
+s,shortopt;myshort;yes;"help for this short option"
+longopt;mylong;no;"help for this longoption"
+entity;myentity;yes;"show me your entity sir..."
+private,public;visible;self;"Whether to show it or not"
+m,mybool;mybool;no;"Don't touch my bool"

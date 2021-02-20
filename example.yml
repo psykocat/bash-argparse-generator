@@ -1,0 +1,31 @@
+---
+generator_opts:
+  usage: null
+  use_getopt: false
+  output_file: /dev/stdout
+  true_false_choice: []
+  remains_as_args: false
+  add_debug: false
+  add_test: false
+
+bash_opts:
+  - options: s,shortopt
+    destination: myshort
+    has_argument: 'yes'
+    help_text: help for this short option
+  - options: longopt
+    destination: mylong
+    has_argument: 'no'
+    help_text: help for this longoption
+  - options: entity
+    destination: myentity
+    has_argument: 'yes'
+    help_text: show me your entity sir...
+  - options: private,public
+    destination: visible
+    has_argument: self
+    help_text: Whether to show it or not
+  - options: m,mybool
+    destination: mybool
+    has_argument: 'no'
+    help_text: Don't touch my bool
