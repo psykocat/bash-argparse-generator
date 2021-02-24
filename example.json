@@ -1,6 +1,7 @@
 {
     "generator_opts":{
-        "usage": "prout",
+        "usage": "additional text",
+        "description": "Having a custom description feels nice too",
         "use_getopt": false,
         "output_file": "/dev/stdout",
         "true_false_choice": [],
