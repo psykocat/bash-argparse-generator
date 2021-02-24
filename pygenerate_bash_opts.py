@@ -96,7 +96,7 @@ def parse_opts_output(opt_file):
             raise
 
 
-def process_bash_infos(opt_infos, usage=None, use_getopt=False,
+def process_bash_infos(opt_infos, usage=None, description=None, use_getopt=False,
                        true_false_choice=[], remains_as_args=False,
                        add_debug=False, add_test=False):
     """Generator"""
@@ -112,7 +112,8 @@ def process_bash_infos(opt_infos, usage=None, use_getopt=False,
     _parser_footer = []
     if usage:
         usage = "%(prog)s " + usage
-    _bash_help = argparse.ArgumentParser(prog="${0}", usage=usage)
+    _bash_help = argparse.ArgumentParser(prog="${0}", usage=usage,
+                                         description=description)
 
     for _opt in opt_infos:
         __arglist = []
