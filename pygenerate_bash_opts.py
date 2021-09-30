@@ -64,7 +64,7 @@ def parse_opts_output(opt_file):
             logging.debug("opt_file is not a json")
         # Keep this one in case we forgot exceptions to handle
         except:
-            logging.error("opt_file is not a json")
+            logging.error("[UNHANDLED] opt_file is not a json")
             raise
 
         # Rewind for the other test
@@ -77,7 +77,7 @@ def parse_opts_output(opt_file):
             logging.debug("opt_file is not a yaml")
         # Keep this one in case we forgot exceptions to handle
         except:
-            logging.error("opt_file is not a yaml")
+            logging.error("[UNHANDLED] opt_file is not a yaml")
             raise
 
         # Rewind for the other test
@@ -92,7 +92,7 @@ def parse_opts_output(opt_file):
             logging.debug("opt_file is not a csv")
         # Keep this one in case we forgot exceptions to handle
         except:
-            logging.error("opt_file is not a csv")
+            logging.error("[UNHANDLED] opt_file is not a csv")
             raise
 
 
