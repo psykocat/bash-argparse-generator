@@ -163,6 +163,7 @@ def process_bash_infos(opt_infos, usage=None, description=None, use_getopt=False
     _parser_header.append("#!/usr/bin/env bash")
     _parser_header.append("set -eu")
     _parser_header.append("")
+
     ## Parse remains arguments
     if remains_as_args:
         _parser_beg.append("declare -a args=()")
