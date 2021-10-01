@@ -56,43 +56,58 @@ def parse_as_yaml(yamlstream):
 def parse_opts_output(opt_file):
     """Parse opts files"""
     _output = []
+
+    _base_err_msg = "%sopt_file is not a %s."
+    _format_err_msg = "%s file found, but the format is incorrect."
+    _unhandled_prefix_msg = "[UNHANDLED] "
     with open(opt_file, "r") as _stream:
-        try:
-            _output = parse_as_json(_stream)
-            return _output
-        except json.decoder.JSONDecodeError as e:
-            logging.debug("opt_file is not a json")
-        # Keep this one in case we forgot exceptions to handle
-        except:
-            logging.error("[UNHANDLED] opt_file is not a json")
-            raise
-
-        # Rewind for the other test
-        _stream.seek(0)
-
+        __current_type = "YAML"
         try:
             _output = parse_as_yaml(_stream)
             return _output
         except TypeError as e:
-            logging.debug("opt_file is not a yaml")
+            logging.debug(_base_err_msg, "", __current_type)
+        except yaml.scanner.ScannerError as e:
+            logging.error(_format_err_msg, __current_type)
+            print("%s%s" % (e.problem, e.problem_mark))
+            sys.exit(1)
+        except yaml.parser.ParserError as e:
+            logging.error(_format_err_msg, __current_type)
+            print("%s%s" % (e.problem, e.problem_mark))
+            sys.exit(1)
         # Keep this one in case we forgot exceptions to handle
         except:
-            logging.error("[UNHANDLED] opt_file is not a yaml")
+            logging.error(_base_err_msg, _unhandled_prefix_msg, __current_type)
             raise
 
         # Rewind for the other test
         _stream.seek(0)
 
+        __current_type = "JSON"
+        try:
+            _output = parse_as_json(_stream)
+            return _output
+        except json.decoder.JSONDecodeError as e:
+            logging.debug(_base_err_msg, "", __current_type)
+        # Keep this one in case we forgot exceptions to handle
+        except:
+            logging.error(_base_err_msg, _unhandled_prefix_msg, __current_type)
+            raise
+
+        # Rewind for the other test
+        _stream.seek(0)
+
+        __current_type = "CSV"
         try:
             _output = parse_as_csv(_stream)
             return _output
         except csv.Error as e:
-            logging.debug("opt_file is not a csv")
+            logging.debug(_base_err_msg, "", __current_type)
         except IndexError as e:
-            logging.debug("opt_file is not a csv")
+            logging.debug(_base_err_msg, "", __current_type)
         # Keep this one in case we forgot exceptions to handle
         except:
-            logging.error("[UNHANDLED] opt_file is not a csv")
+            logging.error(_base_err_msg, _unhandled_prefix_msg, __current_type)
             raise
 
 
