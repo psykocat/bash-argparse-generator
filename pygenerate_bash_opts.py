@@ -158,12 +158,13 @@ def process_bash_infos(opt_infos, usage=None, description=None, use_getopt=False
         ## Third argument : the argument
         ## (only for options as elements are automatically 'self')
         if _opt.get("options", ""):
-            if _opt["has_argument"] == "yes":
-                __argdict.update({"action":"store"})
-                __bashparse += "shift; "+ _opt["destination"] + '="${1}";;'
-            elif _opt["has_argument"] == "self":
+            logging.info(_opt["has_argument"])
+            if _opt["has_argument"] == "self":
                 __argdict.update({"action":"store_true"})
                 __bashparse += _opt["destination"] + '="${1#--}";;'
+            elif _opt["has_argument"] == "yes" or _opt["has_argument"] == True:
+                __argdict.update({"action":"store"})
+                __bashparse += "shift; "+ _opt["destination"] + '="${1}";;'
             else:
                 __argdict.update({"action":"store_true"})
                 __bashparse += _opt["destination"] + '="' + \
