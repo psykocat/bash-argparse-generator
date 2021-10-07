@@ -17,6 +17,9 @@ bash_opts:
     destination: mylong
     has_argument: 'no'
     help_text: help for this longoption
+  - elements: elem1,without1,dashes1
+    destination: elemfirst
+    help_text: "new elements #1"
   - options: entity
     destination: myentity
     has_argument: 'yes'

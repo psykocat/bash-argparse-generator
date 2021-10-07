@@ -137,36 +137,47 @@ def process_bash_infos(opt_infos, usage=None, description=None, use_getopt=False
         __tmp = []
 
         ## First argument : the option(s)
-        for __subopt in _opt["options"].split(","):
-            if len(__subopt) == 1:
-                __tmp.append("-"+__subopt)
-            else:
-                __tmp.append("--"+__subopt)
-            __arglist.append(__tmp[-1])
-        __bashparse = "|".join(__tmp)+") "
+        if _opt.get("options", ""):
+            for __subopt in _opt["options"].split(","):
+                if len(__subopt) == 1:
+                    __tmp.append("-"+__subopt)
+                else:
+                    __tmp.append("--"+__subopt)
+                __arglist.append(__tmp[-1])
+            __argdict.update({"dest": _opt["destination"]})
+        elif _opt.get("elements", ""):
+            for __subopt in _opt["elements"].split(","):
+                __tmp.append(__subopt)
+            __arglist.append(_opt["destination"])
+            __argdict.update({"choices": __tmp})
 
+        __bashparse = "|".join(__tmp)+") "
         ## Second argument : the destination
-        __argdict.update({"dest": _opt["destination"]})
         _parser_beg.append(_opt["destination"]+'="'+true_false_choice[1]+'"')
 
         ## Third argument : the argument
-        if _opt["has_argument"] == "yes":
-            __argdict.update({"action":"store"})
-            __bashparse += "shift; "+ _opt["destination"] + '="${1}";;'
-        elif _opt["has_argument"] == "self":
-            __argdict.update({"action":"store_true"})
-            __bashparse += _opt["destination"] + '="${1#--}";;'
-        else:
-            __argdict.update({"action":"store_true"})
-            __bashparse += _opt["destination"] + '="' + \
-                           true_false_choice[0]+'";;'
+        ## (only for options as elements are automatically 'self')
+        if _opt.get("options", ""):
+            if _opt["has_argument"] == "yes":
+                __argdict.update({"action":"store"})
+                __bashparse += "shift; "+ _opt["destination"] + '="${1}";;'
+            elif _opt["has_argument"] == "self":
+                __argdict.update({"action":"store_true"})
+                __bashparse += _opt["destination"] + '="${1#--}";;'
+            else:
+                __argdict.update({"action":"store_true"})
+                __bashparse += _opt["destination"] + '="' + \
+                               true_false_choice[0]+'";;'
+        elif _opt.get("elements", ""):
+            __bashparse += _opt["destination"] + '="${1}";;'
 
         ## Fourth argument: the help
         __argdict.update({"help": _opt["help_text"]})
 
-        logging.debug(__arglist)
-        logging.debug(__argdict)
-        logging.debug(__bashparse)
+        logging.debug("arglist : %s",__arglist)
+        logging.debug("argdict : %s", __argdict)
+        logging.debug("bashparse : %s",__bashparse)
+        logging.debug("")
 
         if add_test:
             _parser_footer.append('echo "' + _opt["destination"] + \
@@ -345,6 +356,7 @@ def main(args=None):
             _process_method_arguments = _override_opts
         logging.debug("Options given :")
         logging.debug(_process_method_arguments)
+        logging.debug("")
 
         # Extract the output file as it serves after the processing
         __output_file = _process_method_arguments.pop("output_file")
