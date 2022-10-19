@@ -153,7 +153,10 @@ def process_bash_infos(opt_infos, usage=None, description=None, use_getopt=False
 
         __bashparse = "|".join(__tmp)+") "
         ## Second argument : the destination
-        _parser_beg.append(_opt["destination"]+'="'+true_false_choice[1]+'"')
+        if _opt.get("default_value", "") != "":
+            _parser_beg.append(_opt["destination"]+'="'+_opt["default_value"]+'"')
+        else:
+            _parser_beg.append(_opt["destination"]+'="'+true_false_choice[1]+'"')
 
         ## Third argument : the argument
         ## (only for options as elements are automatically 'self')
@@ -164,6 +167,8 @@ def process_bash_infos(opt_infos, usage=None, description=None, use_getopt=False
                 __bashparse += _opt["destination"] + '="${1#--}";;'
             elif _opt["has_argument"] == "yes" or _opt["has_argument"] == True:
                 __argdict.update({"action":"store"})
+                if _opt.get("default_value", "") != "":
+                    __argdict.update({"default":_opt["default_value"]})
                 __bashparse += "shift; "+ _opt["destination"] + '="${1}";;'
             else:
                 __argdict.update({"action":"store_true"})
