@@ -118,10 +118,10 @@ def parse_opts_output(opt_file):
             logging.error(_base_err_msg, _unhandled_prefix_msg, __current_type)
             raise
 
-
 def process_bash_infos(opt_infos, usage=None, description=None, use_getopt=False,
                        true_false_choice=[], remains_as_args=False,
-                       add_debug=False, add_test=False):
+                       no_default_case=False, add_debug=False, add_test=False,
+                       add_shebang=True):
     """Generator"""
     __indent="\t"
     if true_false_choice == []:
@@ -158,18 +158,26 @@ def process_bash_infos(opt_infos, usage=None, description=None, use_getopt=False
                 __tmp.append(__subopt)
             __arglist.append(_opt["destination"])
             __argdict.update({"choices": __tmp})
+        elif _opt.get("array", ""):
+            for __subopt in _opt["array"].split(","):
+                __tmp.append(__subopt)
+            __arglist.append(_opt["destination"])
+            __argdict.update({"choices": __tmp})
 
         __bashparse = "|".join(__tmp)+") "
+
         ## Second argument : the destination
         if _opt.get("default_value", "") != "":
             _parser_beg.append(_opt["destination"]+'="'+_opt["default_value"]+'"')
         else:
-            _parser_beg.append(_opt["destination"]+'="'+true_false_choice[1]+'"')
+            if _opt.get("array", ""):
+                _parser_beg.append(_opt["destination"]+'=()')
+            else:
+                _parser_beg.append(_opt["destination"]+'="'+true_false_choice[1]+'"')
 
         ## Third argument : the argument
         ## (only for options as elements are automatically 'self')
         if _opt.get("options", ""):
-            logging.info(_opt["has_argument"])
             if _opt["has_argument"] == "self":
                 __argdict.update({"action":"store_true"})
                 __bashparse += _opt["destination"] + '="${1#--}";;'
@@ -178,12 +186,17 @@ def process_bash_infos(opt_infos, usage=None, description=None, use_getopt=False
                 if _opt.get("default_value", "") != "":
                     __argdict.update({"default":_opt["default_value"]})
                 __bashparse += "shift; "+ _opt["destination"] + '="${1}";;'
+            elif _opt["has_argument"] == "*" or _opt["has_argument"] == "+":
+                __argdict.update({"nargs": _opt["has_argument"]})
+                __bashparse += "shift; "+ _opt["destination"] + '="${1}";;'
             else:
                 __argdict.update({"action":"store_true"})
                 __bashparse += _opt["destination"] + '="' + \
                                true_false_choice[0]+'";;'
         elif _opt.get("elements", ""):
             __bashparse += _opt["destination"] + '="${1}";;'
+        elif _opt.get("array", ""):
+            __bashparse += _opt["destination"] + '+=("${1}");;'
 
         ## Fourth argument: the help
         __argdict.update({"help": _opt["help_text"]})
@@ -200,9 +213,10 @@ def process_bash_infos(opt_infos, usage=None, description=None, use_getopt=False
         _bash_help.add_argument(*__arglist, **__argdict)
         _parser_opts.append(__indent + __indent + __bashparse)
 
-    _parser_header.append("#!/usr/bin/env bash")
-    _parser_header.append("set -eu")
-    _parser_header.append("")
+    if add_shebang:
+        _parser_header.append("#!/usr/bin/env bash")
+        _parser_header.append("set -eu")
+        _parser_header.append("")
 
     ## Parse remains arguments
     if remains_as_args:
@@ -210,6 +224,8 @@ def process_bash_infos(opt_infos, usage=None, description=None, use_getopt=False
         _parser_opts.append(__indent+__indent+'*) args+=("${1}");;')
         if add_test:
             _parser_footer.append('echo "args=${args[@]}"')
+    elif no_default_case:
+        pass
     else:
         _parser_opts.append(__indent+__indent+'*) ;;')
 
@@ -227,7 +243,7 @@ def process_bash_infos(opt_infos, usage=None, description=None, use_getopt=False
 
     # Pre parsing
     _parser_beg.append("")
-    _parser_beg.append("while [ $# -ne 0 ]; do")
+    _parser_beg.append("while [ ${#} -ne 0 ]; do")
     _parser_beg.append(__indent+'case "${1,,}" in')
     _parser_beg.append(__indent+__indent+"--) shift; break;;")
     _parser_beg.append(__indent+__indent+"-h|-help|--help) usage; exit 1;;")
@@ -244,7 +260,9 @@ def process_bash_infos(opt_infos, usage=None, description=None, use_getopt=False
     if add_test:
         _parser_footer.append("")
 
-    _parser_footer.append("#END\n")
+    if add_shebang:
+        _parser_footer.append("#END\n")
+
     # Combine everything
     _parser.extend(_parser_header)
     _parser.extend(_parser_usage)
@@ -328,6 +346,8 @@ def parse_args(args=None, **kwargs):
                         help="Add debugging in script")
     parser.add_argument("--add-test", action="store_true",
                         help="Add a testing print part.")
+    parser.add_argument("--add-shebang", action="store_true",
+                        help="Add a shebang and set opts in the beginning.")
     return (parser, parser.parse_args(args))
 
 def main(args=None):
@@ -340,15 +360,20 @@ def main(args=None):
         "output_file": "/dev/stdout",
         "true_false_choice": [],
         "remains_as_args": False,
+        "no_default_case": False,
         "add_debug": False,
-        "add_test": False
+        "add_test": False,
+        "add_shebang": True
     }
     _arguments_opts = {
         "output_file": opts.output_file,
         "use_getopt": opts.getopt,
         "remains_as_args": opts.remains_as_args,
+        "no_default_case": getattr(opts, "no_default_case", False),
         "add_debug": opts.add_debug,
-        "add_test": opts.add_test
+        "add_test": opts.add_test,
+        "add_shebang": opts.add_shebang
+
     }
     logging.debug("Default opts")
     logging.debug(_default_opts)
