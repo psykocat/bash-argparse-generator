@@ -13,10 +13,18 @@ import subprocess
 import sys
 try:
     import csv
+except ImportError as e:
+    logging.error("Please download the following python lib : csv")
+    sys.exit(1)
+try:
     import json
+except ImportError as e:
+    logging.error("Please download the following python lib : json")
+    sys.exit(1)
+try:
     import yaml
 except ImportError as e:
-    logging.error("Please download the following python libs : csv, json, yaml")
+    logging.error("Please download the following python lib : yaml")
     sys.exit(1)
 
 __VERSION__ = "0.0.1"
